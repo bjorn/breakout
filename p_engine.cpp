@@ -8,7 +8,7 @@
  *   0.8: More gravity support and bounding boxes.
  *   0.7: Added gravity support and time.
  *   0.6: Particles are initialized/updated/drawn with their own user-defined function.
- *   0.5: Initial partical system, with some build-in particles.
+ *   0.5: Initial particle system, with some built-in particles.
  */
 
 
