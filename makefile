@@ -7,7 +7,7 @@
 #
 
 # C++ Compiler
-CC     = gcc
+CC     = g++
 # Compiler flags
 CFLAGS = -Wall -O3
 
@@ -16,7 +16,7 @@ default: breakout.exe
 remake: clean default
 
 clean:
-	del *.o
+	rm *.o
 
 breakout.exe: p_engine.o main.o ptypes.o particle_list.o
 	$(CC) $(CFLAGS) -o breakout.exe p_engine.o main.o ptypes.o particle_list.o -lalleg
@@ -35,5 +35,3 @@ particle_list.o: particle_list.cpp particle_list.h
 
 datafile.h: breakout.dat
 	dat -h datafile.h breakout.dat
-	
-
