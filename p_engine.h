@@ -9,7 +9,7 @@
 #define INCLUDED_P_ENGINE_H
 
 
-#include <allegro.h>
+#include "base.h"
 
 
 // For a random number from 0 to 0.999 (equal chances for every number)
@@ -51,7 +51,7 @@ class ParticleList;
 
    initialize();            -> when the particle has been added to the system.
    update(float dt);        -> when update_particles(float dt) has reached this particle.
-   draw(BITMAP *bitmap);    -> when draw_particles(BITMAP *bitmap) has reached this particle.
+   draw();                  -> when draw_particles() has reached this particle.
    collision(Particle *p);  -> when a collision occurs between this particle and *p.
    remove();                -> just before the particle is deleted.
 
@@ -66,7 +66,7 @@ public:
 
 	virtual void initialize() {};
 	virtual void update(float dt) {};
-	virtual void draw(BITMAP *bitmap) {};
+	virtual void draw() {};
 	virtual void collision(Particle *p) {};
 	virtual void remove() {};
 
@@ -113,7 +113,7 @@ public:
 	void add_particle(Particle *p);
 	void remove_particle(Particle *p);
 
-	void draw_particles(BITMAP *bitmap);
+	void draw_particles();
 	void update_particles(float dt);
 	void remove_particles();
 

@@ -4,17 +4,13 @@
  *
  */
 
-
-
-#include <math.h>
-#include <allegro.h>
+#include "base.h"
 #include "p_engine.h"
-#include "datafile.h"
+#include "data.h"
 #include "particle_list.h"
 #include "ptypes.h"
 
-extern DATAFILE *datafile;
-
+extern Data data;
 
 
 //=====   BreakoutLevel   ===================================================================//
@@ -24,17 +20,17 @@ nr_of_bricks(0), nr_of_balls(0),
 my_game(imy_game)
 {
 	int brick[14][20];
-	PACKFILE *file = NULL;
+	FILE *file = NULL;
 
 	switch(level_nr) {
-	case 1: file = pack_fopen("level01.lev", F_READ_PACKED); break;
-	case 2: file = pack_fopen("level02.lev", F_READ_PACKED); break;
-	case 3: file = pack_fopen("goldrush.lev", F_READ_PACKED); break;
+	case 1: file = std::fopen("level01.lev", "rb"); break;
+	case 2: file = std::fopen("level02.lev", "rb"); break;
+	case 3: file = std::fopen("goldrush.lev", "rb"); break;
 	}
 
 	if (file) {
-		pack_fread(brick, sizeof(brick), file);
-		pack_fclose(file);
+		std::fread(brick, 1, sizeof(brick), file);
+		std::fclose(file);
 		for (int x = 0; x < 14; x++) {
 			for (int y = 0; y < 20; y++) {
 				if (brick[x][y] > 0)
@@ -57,7 +53,7 @@ my_game(imy_game)
 
 void BreakoutLevel::initialize()
 {
-	play_sample((SAMPLE*)(datafile[STARTUP_WAV]).dat, 255, 128, 1000, 0);
+	play_sample(data.STARTUP_WAV);
 }
 
 void BreakoutLevel::update(float dt)
@@ -74,9 +70,9 @@ void BreakoutLevel::update(float dt)
 	}
 }
 
-void BreakoutLevel::draw(BITMAP *bitmap)
+void BreakoutLevel::draw()
 {
-	level.draw_particles(bitmap);
+	level.draw_particles();
 }
 
 void BreakoutLevel::remove() {level.remove_particles();}
@@ -125,15 +121,15 @@ void BreakoutGame::update(float dt)
 	}
 }
 
-void BreakoutGame::draw(BITMAP *bitmap)
+void BreakoutGame::draw()
 {
-	draw_rle_sprite(bitmap, (RLE_SPRITE*)(datafile[BORDER_BMP]).dat, 0, 0);
-	textprintf(bitmap, font, 528, 40,  makecol(100,100,100), "points");
-	textprintf(bitmap, font, 528, 70,  makecol(100,100,100), "level");
-	textprintf(bitmap, font, 528, 100, makecol(100,100,100), "balls left");
-	textprintf(bitmap, font, 528, 53,  makecol(200,100,100), " %d", player_score);
-	textprintf(bitmap, font, 528, 83,  makecol(100,200,100), " %d", curr_level);
-	textprintf(bitmap, font, 528, 113, makecol(100,100,200), " %d", balls_left);
+	draw_sprite(data.BORDER_BMP, 0.f, 0.f);
+	draw_text(528, 40,  rgb(100,100,100), "points");
+	draw_text(528, 70,  rgb(100,100,100), "level");
+	draw_text(528, 100, rgb(100,100,100), "balls left");
+	draw_text(528, 53,  rgb(200,100,100), " %d", player_score);
+	draw_text(528, 83,  rgb(100,200,100), " %d", curr_level);
+	draw_text(528, 113, rgb(100,100,200), " %d", balls_left);
 }
 
 
@@ -146,44 +142,42 @@ brick_type(ibrick_type)
 {
 	type = P_BRICK;
 	x = ix; y = iy;
-	w = ((RLE_SPRITE*)(datafile[BRICK01_BMP]).dat)->w;
-	h = ((RLE_SPRITE*)(datafile[BRICK01_BMP]).dat)->h;
+	w = (data.BRICK01_BMP)->w;
+	h = (data.BRICK01_BMP)->h;
 	o_type = O_RECT;
 	life = 3;
 	my_level->nr_of_bricks++;
 }
 
-void Brick::draw(BITMAP *bitmap)
+void Brick::draw()
 {
 	switch (brick_type) {
 	case 0:
-		rect(bitmap, int(x - w/2), int(y - h/2), int(x + w/2), int(y + h/2), makecol(75,0,0));
-		line(bitmap, int(x - w/2), int(y - h/2), int(x + w/2), int(y + h/2), makecol(75,0,0));
-		line(bitmap, int(x + w/2), int(y - h/2), int(x - w/2), int(y + h/2), makecol(75,0,0));
+		draw_rect(x - w/2, y - h/2, x + w/2, y + h/2, rgb(75,0,0));
+		draw_line(x - w/2, y - h/2, x + w/2, y + h/2, rgb(75,0,0));
+		draw_line(x + w/2, y - h/2, x - w/2, y + h/2, rgb(75,0,0));
 		break;
 	case 1:
 		if (life == 3) {
-			draw_rle_sprite(bitmap, (RLE_SPRITE*)(datafile[BRICK01_BMP]).dat, int(x - w/2), int(y - h/2));
+			draw_sprite(data.BRICK01_BMP, x - w/2, y - h/2);
 		}
 		else {
-			set_trans_blender(0, 0, 0, MAX(0, int(255 * life * 4)));
-			drawing_mode(DRAW_MODE_TRANS, NULL, 0, 0);
-			draw_trans_rle_sprite(bitmap, (RLE_SPRITE*)(datafile[BRICK01_BMP]).dat, int(x - w/2), int(y - h/2));
-			drawing_mode(DRAW_MODE_SOLID, NULL, 0, 0);
+			float alpha = max(0.f, 1.f * life * 4);
+			draw_sprite(data.BRICK01_BMP, x - w/2, y - h/2, alpha);
 		}
 		break;
-	case 2:  draw_rle_sprite(bitmap, (RLE_SPRITE*)(datafile[BRICK02_BMP]).dat, int(x - w/2), int(y - h/2)); break;
+	case 2:  draw_sprite(data.BRICK02_BMP, x - w/2, y - h/2); break;
 	case 3:
-		if (life == 3) draw_rle_sprite(bitmap, (RLE_SPRITE*)(datafile[BRICK03_BMP]).dat,  int(x - w/2), int(y - h/2));
-		else           draw_rle_sprite(bitmap, (RLE_SPRITE*)(datafile[BRICK03B_BMP]).dat, int(x - w/2), int(y - h/2));
+		if (life == 3) draw_sprite(data.BRICK03_BMP,  x - w/2, y - h/2);
+		else           draw_sprite(data.BRICK03B_BMP, x - w/2, y - h/2);
 		break;
-	case 4:  draw_rle_sprite(bitmap, (RLE_SPRITE*)(datafile[BRICK04_BMP]).dat, int(x - w/2), int(y - h/2)); break;
-	case 5:  draw_rle_sprite(bitmap, (RLE_SPRITE*)(datafile[BRICK05_BMP]).dat, int(x - w/2), int(y - h/2)); break;
-	case 6:  draw_rle_sprite(bitmap, (RLE_SPRITE*)(datafile[BRICK06_BMP]).dat, int(x - w/2), int(y - h/2)); break;
-	case 7:  draw_rle_sprite(bitmap, (RLE_SPRITE*)(datafile[BRICK07_BMP]).dat, int(x - w/2), int(y - h/2)); break;
-	case 8:  draw_rle_sprite(bitmap, (RLE_SPRITE*)(datafile[BRICK08_BMP]).dat, int(x - w/2), int(y - h/2)); break;
-	case 9:  draw_rle_sprite(bitmap, (RLE_SPRITE*)(datafile[BRICK09_BMP]).dat, int(x - w/2), int(y - h/2)); break;
-	case 10: draw_rle_sprite(bitmap, (RLE_SPRITE*)(datafile[BRICK10_BMP]).dat, int(x - w/2), int(y - h/2)); break;
+	case 4:  draw_sprite(data.BRICK04_BMP, x - w/2, y - h/2); break;
+	case 5:  draw_sprite(data.BRICK05_BMP, x - w/2, y - h/2); break;
+	case 6:  draw_sprite(data.BRICK06_BMP, x - w/2, y - h/2); break;
+	case 7:  draw_sprite(data.BRICK07_BMP, x - w/2, y - h/2); break;
+	case 8:  draw_sprite(data.BRICK08_BMP, x - w/2, y - h/2); break;
+	case 9:  draw_sprite(data.BRICK09_BMP, x - w/2, y - h/2); break;
+	case 10: draw_sprite(data.BRICK10_BMP, x - w/2, y - h/2); break;
 	}
 }
 
@@ -201,7 +195,7 @@ void Brick::collision(Particle *cp)
 		case 1:
 			if (life == 3) {
 				life = 0.25;
-				play_sample((SAMPLE*)(datafile[POP5_WAV]).dat, 255, 128, 1000, 0);
+				play_sample(data.POP5_WAV);
 			}
 			break;
 		case 2: life -= 2; break;
@@ -210,7 +204,7 @@ void Brick::collision(Particle *cp)
 			if (life == 3) {
 				life = 0;
 				// Spawn the coins
-				play_sample((SAMPLE*)(datafile[BLIP1_WAV]).dat, 255, 128, 1000, 0);
+				play_sample(data.BLIP1_WAV);
 			}
 			break;
 		default: life = 0;
@@ -239,7 +233,7 @@ my_level(imy_level)
 	type = P_BALL;
 	x = ix; dx = idx;
 	y = iy; dy = idy;
-	w = h = ((RLE_SPRITE*)(datafile[BALL01_BMP]).dat)->w;
+	w = h = (data.BALL01_BMP)->w;
 	o_type = O_RECT;
 	affected_by_obstacle = true;
 	my_level->nr_of_balls++;
@@ -253,9 +247,9 @@ void Ball::update(float dt)
 	}
 }
 
-void Ball::draw(BITMAP *bitmap)
+void Ball::draw()
 {
-	draw_rle_sprite(bitmap, (RLE_SPRITE*)(datafile[BALL01_BMP]).dat, int(x - w/2), int(y - h/2));
+	draw_sprite(data.BALL01_BMP, x - w/2, y - h/2);
 }
 
 void Ball::collision(Particle *cp)
@@ -266,7 +260,7 @@ void Ball::collision(Particle *cp)
 		angle += (x - cp->x) / 64;
 
 		// Max angle with vertical axis is about 70 degrees
-		angle = MAX(MIN(angle,  1.2), -1.2);
+		angle = max(min(angle, 1.2f), -1.2f);
 
 		dx = velocity * sin(angle);
 		dy = velocity * cos(angle);
@@ -282,27 +276,27 @@ Pad::Pad(float ix, float iy)
 {
 	type = P_PAD;
 	x = ix; y = iy;
-	w = ((RLE_SPRITE*)(datafile[PAD01_BMP]).dat)->w;
-	h = ((RLE_SPRITE*)(datafile[PAD01_BMP]).dat)->h / 2;
+	w = (data.PAD01_BMP)->w;
+	h = static_cast<float>((data.PAD01_BMP)->h) / 2;
 	o_type = O_RECT;
 }
 
 void Pad::update(float dt)
 {
-	float temp = ABS(dx);
-	dx = (temp - MIN(temp, 200 * dt)) * SGN(dx);
-	if (key[KEY_LEFT])  dx = MAX(dx - 800 * dt, -200);
-	if (key[KEY_RIGHT]) dx = MIN(dx + 800 * dt, 200);
+	float temp = abs(dx);
+	dx = (temp - min(temp, 200 * dt)) * SGN(dx);
+	if (key[KEY_LEFT])  dx = max<float>(dx - 1200 * dt, -300);
+	if (key[KEY_RIGHT]) dx = min<float>(dx + 1200 * dt, 300);
 
 	temp = x;
-	x = MAX(MIN(x, 493 - w/2), 39 + w/2);
+	x = max(min(x, 493 - w/2), 39 + w/2);
 	if (x != temp) dx = 0;
 
 	// On KEY_SPACE, release an attached ball
 	if (key[KEY_SPACE]) {
 		Particle *attached_ball = attached_balls.get_first();
 		if (attached_ball) {
-			float speed = 200; // pixels per second
+			float speed = 300; // pixels per second
 			float angle = randf - 0.5;
 			attached_ball->dx = speed * sin(angle) + 0.75 * dx;
 			attached_ball->dy = -speed * cos(angle);
@@ -318,9 +312,9 @@ void Pad::update(float dt)
 	}
 }
 
-void Pad::draw(BITMAP *bitmap)
+void Pad::draw()
 {
-	draw_rle_sprite(bitmap, (RLE_SPRITE*)(datafile[PAD01_BMP]).dat, int(x - w/2), int(y - h/2));
+	draw_sprite(data.PAD01_BMP, x - w/2, y - h/2);
 }
 
 void Pad::attach_ball(Ball *the_ball)
@@ -345,9 +339,9 @@ Block::Block(float ix_min, float iy_min, float ix_max, float iy_max)
 	o_type = O_RECT;
 }
 
-void Block::draw(BITMAP *bitmap)
+void Block::draw()
 {
-	//rect(bitmap, int(x - w/2), int(y - h/2), int(x + w/2), int(y + h/2), makecol(255,0,0));
+	//draw_rect(x - w/2, y - h/2, x + w/2, y + h/2, rgb(255,0,0));
 }
 
 
@@ -368,23 +362,23 @@ Star::Star(float ix, float iy, float idx, float idy)
 		life = 0;
 		brightness = 0;
 	}
-	color = makecol(brightness, brightness, brightness);
+	color = rgb(brightness, brightness, brightness);
 }
 
 void Star::update(float dt) {if (y > SCREEN_H) life = 0;}
-void Star::draw(BITMAP *bitmap) {putpixel(bitmap, int(x), int(y), color);}
+void Star::draw() {draw_point(x, y, color);}
 
 
 
 StarField::StarField():
 time_passed(0),
-time_per_star(1.0 / 20.0)
+time_per_star(1.0 / 40.0)
 {}
 
 void StarField::initialize()
 {
 	for (int i = 0; i < (SCREEN_H / 25) * int(1.0 / time_per_star); i++) {
-		system->add_particle(new Star(SCREEN_W * randf, SCREEN_H * randf, 0, 50));
+		system->add_particle(new Star(SCREEN_W * randf, SCREEN_H * randf, 0, 75));
 	}
 }
 
@@ -392,8 +386,7 @@ void StarField::update(float dt)
 {
 	time_passed += dt;
 	while (time_passed > time_per_star) {
-		system->add_particle(new Star(SCREEN_W * randf, 0, 0, 50));
+		system->add_particle(new Star(SCREEN_W * randf, 0, 0, 75));
 		time_passed -= time_per_star;
 	}
 }
-

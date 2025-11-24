@@ -8,7 +8,7 @@
 #ifndef INCLUDED_PTYPES_H
 #define INCLUDED_PTYPES_H
 
-#include <allegro.h>
+#include "base.h"
 #include "p_engine.h"
 #include "particle_list.h"
 
@@ -32,7 +32,7 @@ public:
 	BreakoutLevel(BreakoutGame *my_game, int level_nr);
 	void initialize();
 	void update(float dt);
-	void draw(BITMAP *bitmap);
+	void draw();
 	void remove();
 
 	void add_to_score(int points);
@@ -54,7 +54,7 @@ public:
 	BreakoutGame();
 	void initialize();
 	void update(float dt);
-	void draw(BITMAP *bitmap);
+	void draw();
 
 	bool level_finished;
 	int player_score;
@@ -72,7 +72,7 @@ private:
 class Brick : public Particle {
 public:
 	Brick(BreakoutLevel *my_level, float x, float y, int brick_type);
-	void draw(BITMAP *bitmap);
+	void draw();
 	void update(float dt);
 	void collision(Particle *cp);
 	void remove();
@@ -89,7 +89,7 @@ class Ball : public Particle {
 public:
 	Ball(BreakoutLevel *my_level, float ix, float iy, float idx, float idy);
 	void update(float dt);
-	void draw(BITMAP *bitmap);
+	void draw();
 	void collision(Particle *cp);
 	void remove();
 private:
@@ -104,7 +104,7 @@ class Pad : public Particle {
 public:
 	Pad(float ix, float iy);
 	void update(float dt);
-	void draw(BITMAP *bitmap);
+	void draw();
 
 	void attach_ball(Ball *the_ball);
 private:
@@ -118,7 +118,7 @@ private:
 class Block : public Particle {
 public:
 	Block(float ix_min, float iy_min, float ix_max, float iy_max);
-	void draw(BITMAP *bitmap);
+	void draw();
 };
 
 
@@ -129,9 +129,9 @@ class Star : public Particle {
 public:
 	Star(float x, float y, float dx, float dy);
 	void update(float dt);
-	void draw(BITMAP *bitmap);
+	void draw();
 private:
-	int color;
+	Color color;
 };
 
 

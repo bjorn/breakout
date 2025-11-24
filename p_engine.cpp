@@ -13,8 +13,7 @@
 
 
 #include <math.h>
-#include <allegro.h>
-#include "particle_list.h"
+#include "base.h"
 #include "p_engine.h"
 
 
@@ -95,7 +94,7 @@ void Particle_System::update_particles(float dt)
 	Particle* temp_p;
 	float Dx, Dy, squares;
 	bool bounce_x, bounce_y;
-	
+
 	while (p) {
 		if (p->life <= 0) {
 			temp_p = p;
@@ -146,7 +145,7 @@ void Particle_System::update_particles(float dt)
 								(p->y + p->h / 2) > (o->p->y - o->p->h / 2) &&
 								(p->x - p->w / 2) < (o->p->x + o->p->w / 2) &&
 								(p->y - p->h / 2) < (o->p->y + o->p->h / 2)) {
-								
+
 								//colliding_particles->add_first(o->p);
 								colliding = true;
 
@@ -190,21 +189,16 @@ void Particle_System::update_particles(float dt)
 			p->update(dt);
 			set_obstacle(p);
 			set_grav_source(p);
-			
+
 			p = p->next;
 		}
 	}
 }
 
-void Particle_System::draw_particles(BITMAP *bitmap)
+void Particle_System::draw_particles()
 {
-	if (bitmap) {
-		Particle* p = first_particle;
-		while (p) {
-			p->draw(bitmap);
-			p = p->next;
-		}
-	}
+	for (Particle *p = first_particle; p; p = p->next)
+		p->draw();
 }
 
 void Particle_System::set_obstacle(Particle *p)
