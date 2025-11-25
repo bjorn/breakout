@@ -7,6 +7,7 @@
 #include "base.h"
 
 #include <algorithm>
+#include <iostream>
 #include <vector>
 
 // ----------------------------------------------------------------------------
@@ -30,6 +31,7 @@ static constexpr int NUM_AUDIO_STREAMS = 4;
 static SDL_AudioStream *gAudioStreams[NUM_AUDIO_STREAMS] = {nullptr, nullptr, nullptr, nullptr};
 static int gNextAudioStreamIndex = 0;
 static uint64_t gLastTicks = 0;
+static const bool *gKeyStates = nullptr;
 
 //=====   Frames per second counter   =======================================================//
 
@@ -172,6 +174,8 @@ bool init()
 
     std::fill(std::begin(key), std::end(key), 0);
 
+    gKeyStates = SDL_GetKeyboardState(nullptr);
+
     // Create multiple audio streams for polyphonic playback (formats are set later)
     for (int i = 0; i < NUM_AUDIO_STREAMS; ++i) {
         gAudioStreams[i] = SDL_CreateAudioStream(nullptr, nullptr);
@@ -215,30 +219,38 @@ void present()
 void process_events()
 {
     SDL_Event e;
+    bool quit = false;
 
     while (SDL_PollEvent(&e)) {
         if (e.type == SDL_EVENT_QUIT) {
-            key[KEY_ESC] = 1; // Force exit
-        } else if (e.type == SDL_EVENT_KEY_DOWN || e.type == SDL_EVENT_KEY_UP) {
-            bool pressed = (e.type == SDL_EVENT_KEY_DOWN);
-            SDL_Scancode sc = e.key.scancode;
-            switch (sc) {
-                case SDL_SCANCODE_ESCAPE: key[KEY_ESC] = pressed; break;
-                case SDL_SCANCODE_LEFT:   key[KEY_LEFT] = pressed; break;
-                case SDL_SCANCODE_RIGHT:  key[KEY_RIGHT] = pressed; break;
-                case SDL_SCANCODE_SPACE:  key[KEY_SPACE] = pressed; break;
-                case SDL_SCANCODE_F:
-                    if (pressed) {
-                        // toggle fullscreen
-                        bool fullscreen = SDL_GetWindowFlags(gWindow) & SDL_WINDOW_FULLSCREEN;
-                        SDL_SetWindowFullscreen(gWindow, fullscreen ? 0 : SDL_WINDOW_FULLSCREEN);
+            quit = true;
+        } else if (e.type == SDL_EVENT_KEY_DOWN) {
+            switch (e.key.key) {
+                case SDLK_F: {
+                    // toggle fullscreen
+                    bool fullscreen = SDL_GetWindowFlags(gWindow) & SDL_WINDOW_FULLSCREEN;
+                    SDL_SetWindowFullscreen(gWindow, fullscreen ? 0 : SDL_WINDOW_FULLSCREEN);
+                    break;
+                }
+                case SDLK_V: {
+                    // toggle vsync
+                    int vsync;
+                    if (SDL_GetRenderVSync(gRenderer, &vsync)) {
+                        SDL_SetRenderVSync(gRenderer, vsync ? 0 : 1);
+                        std::cout << "VSync " << (vsync ? "off" : "on") << std::endl;
                     }
                     break;
+                }
                 default:
                     break;
             }
         }
     }
+
+    key[KEY_ESC] = gKeyStates[SDL_SCANCODE_ESCAPE] || quit;
+    key[KEY_LEFT] = gKeyStates[SDL_SCANCODE_LEFT];
+    key[KEY_RIGHT] = gKeyStates[SDL_SCANCODE_RIGHT];
+    key[KEY_SPACE] = gKeyStates[SDL_SCANCODE_SPACE];
 }
 
 // ----------------------------------------------------------------------------
