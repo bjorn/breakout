@@ -165,6 +165,7 @@ bool init()
     }
 
     SDL_SetRenderVSync(gRenderer, 1);
+    SDL_SetRenderDrawBlendMode(gRenderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderLogicalPresentation(gRenderer, SCREEN_W, SCREEN_H, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 
     SDL_AddTimer(1000, reset_fps_counter, nullptr);

@@ -59,8 +59,11 @@ struct Sample {
 };
 
 /** Color helper */
-static inline Color rgb(uint8_t r, uint8_t g, uint8_t b) {
+inline Color rgb(uint8_t r, uint8_t g, uint8_t b) {
     return { r, g, b, 255 };
+}
+inline Color rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+    return { r, g, b, a };
 }
 
 /** Print error message to stderr */

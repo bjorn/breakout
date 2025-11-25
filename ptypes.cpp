@@ -357,7 +357,7 @@ Star::Star(float ix, float iy, float idx, float idy)
 		life = 0;
 		brightness = 0;
 	}
-	color = rgb(brightness, brightness, brightness);
+	color = rgba(255, 255, 255, brightness);
 }
 
 void Star::update(float dt) {if (y > SCREEN_H) life = 0;}
