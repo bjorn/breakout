@@ -7,7 +7,6 @@
 #include "base.h"
 #include "p_engine.h"
 #include "data.h"
-#include "particle_list.h"
 #include "ptypes.h"
 
 extern Data data;
@@ -293,23 +292,19 @@ void Pad::update(float dt)
 	if (x != temp) dx = 0;
 
 	// On KEY_SPACE, release an attached ball
-	if (key[KEY_SPACE]) {
-		Particle *attached_ball = attached_balls.get_first();
-		if (attached_ball) {
-			float speed = 300; // pixels per second
-			float angle = randf - 0.5;
-			attached_ball->dx = speed * sin(angle) + 0.75 * dx;
-			attached_ball->dy = -speed * cos(angle);
-			attached_balls.remove(attached_ball);
-		}
+	if (key[KEY_SPACE] && !attached_balls.empty()) {
+		Particle *attached_ball = attached_balls.back();
+		attached_balls.pop_back();
+
+		float speed = 300; // pixels per second
+		float angle = randf - 0.5;
+		attached_ball->dx = speed * sin(angle) + 0.75 * dx;
+		attached_ball->dy = -speed * cos(angle);
 	}
 
 	// Make sure attached balls are in the right position
-	Particle *attached_ball = attached_balls.get_first();
-	while (attached_ball) {
-		attached_ball->x = x;
-		attached_ball = attached_balls.get_next();
-	}
+	for (auto &ball : attached_balls)
+		ball->x = x;
 }
 
 void Pad::draw()
@@ -323,7 +318,7 @@ void Pad::attach_ball(Ball *the_ball)
 	the_ball->dx = 0;
 	the_ball->y = y - h/2 - 4;
 	the_ball->x = x;
-	attached_balls.add_first(the_ball);
+	attached_balls.push_back(the_ball);
 }
 
 

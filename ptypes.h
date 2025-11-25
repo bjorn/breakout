@@ -10,8 +10,8 @@
 
 #include "base.h"
 #include "p_engine.h"
-#include "particle_list.h"
 
+#include <vector>
 
 // Defined particle types
 #define P_BALL		1
@@ -108,7 +108,7 @@ public:
 
 	void attach_ball(Ball *the_ball);
 private:
-	ParticleList attached_balls;
+	std::vector<Particle*> attached_balls;
 };
 
 
