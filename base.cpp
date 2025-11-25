@@ -157,12 +157,15 @@ bool init()
         return false;
     }
 
-    if (!SDL_CreateWindowAndRenderer("Breakout", SCREEN_W, SCREEN_H, 0, &gWindow, &gRenderer)) {
+    SDL_WindowFlags window_flags = SDL_WINDOW_RESIZABLE;
+
+    if (!SDL_CreateWindowAndRenderer("Breakout", SCREEN_W, SCREEN_H, window_flags, &gWindow, &gRenderer)) {
         print_error("Warning: Failed to create window and renderer (%s)", SDL_GetError());
         return false;
     }
 
     SDL_SetRenderVSync(gRenderer, 1);
+    SDL_SetRenderLogicalPresentation(gRenderer, SCREEN_W, SCREEN_H, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 
     SDL_AddTimer(1000, reset_fps_counter, nullptr);
 
@@ -223,7 +226,15 @@ void process_events()
                 case SDL_SCANCODE_LEFT:   key[KEY_LEFT] = pressed; break;
                 case SDL_SCANCODE_RIGHT:  key[KEY_RIGHT] = pressed; break;
                 case SDL_SCANCODE_SPACE:  key[KEY_SPACE] = pressed; break;
-                default: break;
+                case SDL_SCANCODE_F:
+                    if (pressed) {
+                        // toggle fullscreen
+                        bool fullscreen = SDL_GetWindowFlags(gWindow) & SDL_WINDOW_FULLSCREEN;
+                        SDL_SetWindowFullscreen(gWindow, fullscreen ? 0 : SDL_WINDOW_FULLSCREEN);
+                    }
+                    break;
+                default:
+                    break;
             }
         }
     }
