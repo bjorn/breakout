@@ -24,31 +24,31 @@ Data data;
 /* Datafile */
 void load_data()
 {
-    data.BALL01_BMP = load_sprite("ball01.bmp");
-    data.BLIP1_WAV = load_sample("BLIP1.wav");
-    data.BONUS01_BMP = load_sprite("bonus01.bmp");
-    data.BORDER_BMP = load_sprite("border.bmp");
-    data.BRICK01_BMP = load_sprite("brick01.bmp");
-    data.BRICK02_BMP = load_sprite("brick02.bmp");
-    data.BRICK03_BMP = load_sprite("brick03.bmp");
-    data.BRICK03B_BMP = load_sprite("brick03b.bmp");
-    data.BRICK04_BMP = load_sprite("brick04.bmp");
-    data.BRICK05_BMP = load_sprite("brick05.bmp");
-    data.BRICK06_BMP = load_sprite("brick06.bmp");
-    data.BRICK07_BMP = load_sprite("brick07.bmp");
-    data.BRICK08_BMP = load_sprite("brick08.bmp");
-    data.BRICK09_BMP = load_sprite("brick09.bmp");
-    data.BRICK10_BMP = load_sprite("brick10.bmp");
-    data.COIN_BMP = load_sprite("coin.bmp");
-    data.HIT3_WAV = load_sample("HIT3.wav");
-    data.PAD01_BMP = load_sprite("pad01.bmp");
-    data.POP1_WAV = load_sample("POP1.wav");
-    data.POP2_WAV = load_sample("POP2.wav");
-    data.POP3_WAV = load_sample("POP3.wav");
-    data.POP4_WAV = load_sample("POP4.wav");
-    data.POP5_WAV = load_sample("POP5.wav");
-    data.STARTUP_WAV = load_sample("STARTUP.wav");
-    data.TIN_WAV = load_sample("TIN.wav");
+    data.BALL01_BMP = load_sprite("data/ball01.bmp");
+    data.BLIP1_WAV = load_sample("data/BLIP1.wav");
+    data.BONUS01_BMP = load_sprite("data/bonus01.bmp");
+    data.BORDER_BMP = load_sprite("data/border.bmp");
+    data.BRICK01_BMP = load_sprite("data/brick01.bmp");
+    data.BRICK02_BMP = load_sprite("data/brick02.bmp");
+    data.BRICK03_BMP = load_sprite("data/brick03.bmp");
+    data.BRICK03B_BMP = load_sprite("data/brick03b.bmp");
+    data.BRICK04_BMP = load_sprite("data/brick04.bmp");
+    data.BRICK05_BMP = load_sprite("data/brick05.bmp");
+    data.BRICK06_BMP = load_sprite("data/brick06.bmp");
+    data.BRICK07_BMP = load_sprite("data/brick07.bmp");
+    data.BRICK08_BMP = load_sprite("data/brick08.bmp");
+    data.BRICK09_BMP = load_sprite("data/brick09.bmp");
+    data.BRICK10_BMP = load_sprite("data/brick10.bmp");
+    data.COIN_BMP = load_sprite("data/coin.bmp");
+    data.HIT3_WAV = load_sample("data/HIT3.wav");
+    data.PAD01_BMP = load_sprite("data/pad01.bmp");
+    data.POP1_WAV = load_sample("data/POP1.wav");
+    data.POP2_WAV = load_sample("data/POP2.wav");
+    data.POP3_WAV = load_sample("data/POP3.wav");
+    data.POP4_WAV = load_sample("data/POP4.wav");
+    data.POP5_WAV = load_sample("data/POP5.wav");
+    data.STARTUP_WAV = load_sample("data/STARTUP.wav");
+    data.TIN_WAV = load_sample("data/TIN.wav");
 }
 
 int main(int argc, char *argv[])

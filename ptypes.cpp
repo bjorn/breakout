@@ -22,9 +22,9 @@ my_game(imy_game)
 	FILE *file = NULL;
 
 	switch(level_nr) {
-	case 1: file = std::fopen("level01.lev", "rb"); break;
-	case 2: file = std::fopen("level02.lev", "rb"); break;
-	case 3: file = std::fopen("goldrush.lev", "rb"); break;
+	case 1: file = std::fopen("data/level01.lev", "rb"); break;
+	case 2: file = std::fopen("data/level02.lev", "rb"); break;
+	case 3: file = std::fopen("data/goldrush.lev", "rb"); break;
 	}
 
 	if (file) {
