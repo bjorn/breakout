@@ -24,14 +24,14 @@ using std::min;
 using std::sin;
 using std::sqrt;
 #ifndef SGN
-#define SGN(a)   (((a) < 0) ? -1 : ((a) > 0))
+#define SGN(a) (((a) < 0) ? -1 : ((a) > 0))
 #endif
 
 /* ----------------------------------------------------------------------------
  * Key codes (mapped internally to SDL scancodes)
  */
-inline constexpr int KEY_ESC   = 1;
-inline constexpr int KEY_LEFT  = 2;
+inline constexpr int KEY_ESC = 1;
+inline constexpr int KEY_LEFT = 2;
 inline constexpr int KEY_RIGHT = 3;
 inline constexpr int KEY_SPACE = 4;
 
@@ -57,16 +57,16 @@ struct Sample {
     unsigned char *buffer = nullptr;
     unsigned int length = 0;
 
-    ~Sample() {
-        SDL_free(buffer);
-    }
+    ~Sample() { SDL_free(buffer); }
 };
 
 /** Color helper */
-[[nodiscard]] inline constexpr Color rgb(uint8_t r, uint8_t g, uint8_t b) {
+[[nodiscard]] inline constexpr Color rgb(uint8_t r, uint8_t g, uint8_t b)
+{
     return { r, g, b, 255 };
 }
-[[nodiscard]] inline constexpr Color rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+[[nodiscard]] inline constexpr Color rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+{
     return { r, g, b, a };
 }
 
@@ -81,8 +81,7 @@ void draw_point(float x, float y, Color color);
 void draw_sprite(Sprite *spr, float x, float y, float alpha = 1.0f);
 
 /* Audio */
-void play_sample(Sample *s, float gain = 1.f, int pan = 128,
-                 float frequencyRatio = 1.f, int loop = 0);
+void play_sample(Sample *s, float gain = 1.f, int pan = 128, float frequencyRatio = 1.f, int loop = 0);
 
 /* Main loop */
 [[nodiscard]] bool init();

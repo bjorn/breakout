@@ -14,7 +14,7 @@
 // ----------------------------------------------------------------------------
 // Global variables (declared extern in header)
 // ----------------------------------------------------------------------------
-volatile unsigned char key[256] = {0};
+volatile unsigned char key[256] = { 0 };
 volatile float delta_time = 0.f;
 
 // ----------------------------------------------------------------------------
@@ -23,13 +23,12 @@ volatile float delta_time = 0.f;
 static SDL_Window *gWindow = nullptr;
 static SDL_Renderer *gRenderer = nullptr;
 
-
 // ----------------------------------------------------------------------------
 // Audio state
 // ----------------------------------------------------------------------------
 static SDL_AudioDeviceID gAudioDevice = 0;
 static constexpr int NUM_AUDIO_STREAMS = 4;
-static SDL_AudioStream *gAudioStreams[NUM_AUDIO_STREAMS] = {nullptr, nullptr, nullptr, nullptr};
+static SDL_AudioStream *gAudioStreams[NUM_AUDIO_STREAMS] = { nullptr, nullptr, nullptr, nullptr };
 static int gNextAudioStreamIndex = 0;
 static uint64_t gLastTicks = 0;
 static const bool *gKeyStates = nullptr;
@@ -61,7 +60,8 @@ void print_error(const char *fmt, ...)
 // ----------------------------------------------------------------------------
 void draw_text(float x, float y, Color color, const char *fmt, ...)
 {
-    if (!gRenderer || !fmt) return;
+    if (!gRenderer || !fmt)
+        return;
 
     char buffer[512];
     va_list ap;
@@ -80,7 +80,7 @@ void draw_rect(float x1, float y1, float x2, float y2, Color color)
         x1,
         y1,
         x2 - x1 + 1,
-        y2 - y1 + 1
+        y2 - y1 + 1,
     };
     SDL_RenderRect(gRenderer, &r);
 }
@@ -106,7 +106,7 @@ void draw_sprite(Sprite *spr, float x, float y, float alpha)
         x,
         y,
         static_cast<float>(spr->w),
-        static_cast<float>(spr->h)
+        static_cast<float>(spr->h),
     };
     SDL_SetTextureAlphaModFloat(spr, alpha);
     SDL_RenderTexture(gRenderer, spr, nullptr, &r);
@@ -124,7 +124,7 @@ static inline SDL_AudioStream *next_audio_stream()
 
 void play_sample(Sample *s, float gain, int pan, float frequencyRatio, int loop)
 {
-    (void)pan;  // panning would require processing the sample's buffer
+    (void)pan; // panning would require processing the sample's buffer
     (void)loop; // looping would require additional bookkeeping
 
     if (!s || !s->buffer || !s->length)
@@ -142,8 +142,7 @@ void play_sample(Sample *s, float gain, int pan, float frequencyRatio, int loop)
     // Replace any queued sample and set the gain and frequency ratio
     SDL_ClearAudioStream(stream);
     SDL_SetAudioStreamGain(stream, gain);
-    SDL_SetAudioStreamFrequencyRatio(stream,
-                                     std::clamp(frequencyRatio, 0.01f, 100.f));
+    SDL_SetAudioStreamFrequencyRatio(stream, clamp(frequencyRatio, 0.01f, 100.f));
 
     int putLen = static_cast<int>(clamp<unsigned int>(s->length, 0, INT_MAX));
     if (!SDL_PutAudioStreamData(stream, s->buffer, putLen)) {
@@ -200,7 +199,7 @@ bool init()
 // ----------------------------------------------------------------------------
 void present()
 {
-    draw_text(0, 0, rgb(100,100,100), "%d fps", fps);
+    draw_text(0, 0, rgb(100, 100, 100), "%d fps", fps);
     fps_counter++;
 
     SDL_RenderPresent(gRenderer);
@@ -228,23 +227,22 @@ void process_events()
             quit = true;
         } else if (e.type == SDL_EVENT_KEY_DOWN) {
             switch (e.key.key) {
-                case SDLK_F: {
-                    // toggle fullscreen
-                    bool fullscreen = SDL_GetWindowFlags(gWindow) & SDL_WINDOW_FULLSCREEN;
-                    SDL_SetWindowFullscreen(gWindow, !fullscreen);
-                    break;
+            case SDLK_F: {
+                // toggle fullscreen
+                bool fullscreen = SDL_GetWindowFlags(gWindow) & SDL_WINDOW_FULLSCREEN;
+                SDL_SetWindowFullscreen(gWindow, !fullscreen);
+                break;
+            }
+            case SDLK_V: {
+                // toggle vsync
+                int vsync;
+                if (SDL_GetRenderVSync(gRenderer, &vsync)) {
+                    SDL_SetRenderVSync(gRenderer, vsync ? 0 : 1);
+                    std::cout << "VSync " << (vsync ? "off" : "on") << '\n';
                 }
-                case SDLK_V: {
-                    // toggle vsync
-                    int vsync;
-                    if (SDL_GetRenderVSync(gRenderer, &vsync)) {
-                        SDL_SetRenderVSync(gRenderer, vsync ? 0 : 1);
-                        std::cout << "VSync " << (vsync ? "off" : "on") << '\n';
-                    }
-                    break;
-                }
-                default:
-                    break;
+                break;
+            }
+            default: break;
             }
         }
     }
@@ -292,7 +290,8 @@ void shutdown()
 // ----------------------------------------------------------------------------
 Sample *load_sample(const char *filename)
 {
-    if (!filename) return nullptr;
+    if (!filename)
+        return nullptr;
 
     auto *sample = new Sample;
 

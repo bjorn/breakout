@@ -6,12 +6,11 @@
  *   1.0: Initial version.
  */
 
-
-#include <ctime>
 #include <cstdlib>
+#include <ctime>
+
 #include "base.h"
 #include "data.h"
-
 #include "p_engine.h"
 #include "ptypes.h"
 
@@ -51,38 +50,38 @@ void load_data()
     data.TIN_WAV = load_sample("data/TIN.wav");
 }
 
-int main(int /*argc*/, char** /*argv*/)
+int main(int /*argc*/, char ** /*argv*/)
 {
-	if (!init()) {
-		print_error("Failed to initialize SDL (%s)", SDL_GetError());
-		return 1;
-	}
+    if (!init()) {
+        print_error("Failed to initialize SDL (%s)", SDL_GetError());
+        return 1;
+    }
 
-	load_data();
+    load_data();
 
-	// Basic nullptr asset checks for critical sprites
-	if (!data.BORDER_BMP || !data.PAD01_BMP || !data.BALL01_BMP) {
-		print_error("Critical assets failed to load.");
-		shutdown();
-		return 1;
-	}
+    // Basic nullptr asset checks for critical sprites
+    if (!data.BORDER_BMP || !data.PAD01_BMP || !data.BALL01_BMP) {
+        print_error("Critical assets failed to load.");
+        shutdown();
+        return 1;
+    }
 
-	std::srand(std::time(nullptr));
+    std::srand(std::time(nullptr));
 
-	// Add initial particles to the particle system
-	p.add_particle(new BreakoutGame);
-	p.add_particle(new StarField);
+    // Add initial particles to the particle system
+    p.add_particle(new BreakoutGame);
+    p.add_particle(new StarField);
 
-	// Main loop
-	do {
-		process_events();
-		p.update_particles(delta_time);
-		p.draw_particles();
+    // Main loop
+    do {
+        process_events();
+        p.update_particles(delta_time);
+        p.draw_particles();
         present();
-	} while (!key[KEY_ESC]); // while (running)
+    } while (!key[KEY_ESC]); // while (running)
 
-	p.remove_particles();
+    p.remove_particles();
 
-	shutdown();
-	return 0;
+    shutdown();
+    return 0;
 }
