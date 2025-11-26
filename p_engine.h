@@ -4,27 +4,27 @@
  *
  */
 
-
-#ifndef INCLUDED_P_ENGINE_H
-#define INCLUDED_P_ENGINE_H
-
+#pragma once
 
 #include "base.h"
+#include <cstdlib>
 
-
-// For a random number from 0 to 0.999 (equal chances for every number)
-#define randf	(float(rand()%1024) / 1024.0)
-
+// Random float in [0,1)
+inline float randf() { return static_cast<float>(std::rand() & 1023) / 1024.0f; }
 
 // Gravitation types
-#define G_NONE		0
-#define G_CONSTANT	1
-#define G_POINT		2
-#define G_LINE		3
+enum class GravityType {
+    None,
+    Constant,
+    Point,
+    Line
+};
 
 // Obstacle types
-#define O_NONE		0
-#define O_RECT		1
+enum class ObstacleType {
+   None,
+   Rect
+};
 
 
 
@@ -62,7 +62,7 @@ class ParticleList;
 class Particle {
 public:
 	Particle();
-	virtual ~Particle() {};
+	virtual ~Particle() = default;
 
 	virtual void initialize() {};
 	virtual void update(float dt) {};
@@ -70,27 +70,31 @@ public:
 	virtual void collision(Particle *p) {};
 	virtual void remove() {};
 
-	float x, y, dx, dy, life;		// If life <= 0 then the particle will be removed.
-	float gravity;					// Amount of invluence from gravity sources.
-	bool affected_by_obstacle;
+	float x = 0.f, y = 0.f, dx = 0.f, dy = 0.f;
+	float life = 1.f;                           // If life <= 0 then the particle will be removed.
+	float gravity = 0.f;                        // Amount of influence from gravity sources.
+	bool affected_by_obstacle = false;
 
-	int type;						// Can be used to identity the particle, 0 by default.
-	float w, h, r, gx, gy;			// Width, Height, Radius and G-Force.
-	int g_type, o_type;				// Gravity type and Obstacle type.
+	int type = 0;                               // Can be used to identify the particle, 0 by default.
+	float w = 0.f, h = 0.f;                     // Width, Height
+	float r = 0.f;                              // Radius
+	float gx = 0.f, gy = 0.f;                   // G-Force
+	GravityType g_type = GravityType::None;     // Gravity type
+	ObstacleType o_type = ObstacleType::None;   // Obstacle type
 
-	Particle_System *system;		// Can be used to add additional particles to the system.
+	Particle_System *system = nullptr;          // Can be used to add additional particles to the system.
 
 	/*
 	  The following variables are used by the particle system
 	  and should not be modified by the particle.
-	  It would be better if only the system had acces
-	  to these variables.
+	  It would be better if only the system had access to these variables.
 	*/
-	Particle *prev, *next;
-	Modifier *obstacle;
-	Modifier *grav_source;
-	//ParticleList *colliding_particles;
-	bool colliding;
+	Particle *prev = nullptr;
+	Particle *next = nullptr;
+	Modifier *obstacle = nullptr;
+	Modifier *grav_source = nullptr;
+	//std::vector<Particle*> colliding_particles;
+	bool colliding = false;
 };
 
 
@@ -100,9 +104,10 @@ public:
 
 class Modifier {
 public:
-	Modifier(Particle *ip) : p(ip), prev(NULL), next(NULL) {}
+	Modifier(Particle *ip) : p(ip) {}
 	Particle *p;
-	Modifier *prev, *next;
+	Modifier *prev = nullptr;
+	Modifier *next = nullptr;
 };
 
 class Particle_System {
@@ -120,13 +125,9 @@ public:
 	void set_obstacle(Particle *p);
 	void set_grav_source(Particle *p);
 
-	unsigned int nr_of_particles;
+	unsigned int nr_of_particles = 0;
 private:
-	Particle *first_particle;
-	Modifier *first_obstacle;
-	Modifier *first_grav_source;
+	Particle *first_particle = nullptr;
+	Modifier *first_obstacle = nullptr;
+	Modifier *first_grav_source = nullptr;
 };
-
-
-
-#endif /* INCLUDED_P_ENGINE_H */

@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
 #include <cstdio>
@@ -14,11 +15,14 @@
 #include <SDL3/SDL.h>
 
 /* ----------------------------------------------------------------------------
- * Helper macros
+ * Helper functions and macros
  */
 using std::abs;
+using std::atan;
+using std::clamp;
 using std::max;
 using std::min;
+using std::sqrt;
 #ifndef SGN
 #define SGN(a)   (((a) < 0) ? -1 : ((a) > 0))
 #endif
@@ -26,10 +30,10 @@ using std::min;
 /* ----------------------------------------------------------------------------
  * Key codes (mapped internally to SDL scancodes)
  */
-#define KEY_ESC    1
-#define KEY_LEFT   2
-#define KEY_RIGHT  3
-#define KEY_SPACE  4
+inline constexpr int KEY_ESC   = 1;
+inline constexpr int KEY_LEFT  = 2;
+inline constexpr int KEY_RIGHT = 3;
+inline constexpr int KEY_SPACE = 4;
 
 extern volatile unsigned char key[256];
 extern volatile float delta_time;
@@ -37,8 +41,8 @@ extern volatile float delta_time;
 /* ----------------------------------------------------------------------------
  * Screen dimensions (fixed for this project)
  */
-#define SCREEN_W 640
-#define SCREEN_H 480
+inline constexpr int SCREEN_W = 640;
+inline constexpr int SCREEN_H = 480;
 
 /* ----------------------------------------------------------------------------
  * Types
@@ -59,10 +63,10 @@ struct Sample {
 };
 
 /** Color helper */
-inline Color rgb(uint8_t r, uint8_t g, uint8_t b) {
+[[nodiscard]] inline constexpr Color rgb(uint8_t r, uint8_t g, uint8_t b) {
     return { r, g, b, 255 };
 }
-inline Color rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+[[nodiscard]] inline constexpr Color rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
     return { r, g, b, a };
 }
 
@@ -81,11 +85,11 @@ void play_sample(Sample *s, float gain = 1.f, int pan = 128,
                  float frequencyRatio = 1.f, int loop = 0);
 
 /* Main loop */
-bool init();
+[[nodiscard]] bool init();
 void present();
 void process_events();
 void shutdown();
 
 /* Resources */
-Sample *load_sample(const char *filename);
-Sprite *load_sprite(const char *filename);
+[[nodiscard]] Sample *load_sample(const char *filename);
+[[nodiscard]] Sprite *load_sprite(const char *filename);

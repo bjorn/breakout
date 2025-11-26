@@ -15,11 +15,10 @@ extern Data data;
 //=====   BreakoutLevel   ===================================================================//
 
 BreakoutLevel::BreakoutLevel(BreakoutGame *imy_game, int level_nr):
-nr_of_bricks(0), nr_of_balls(0),
 my_game(imy_game)
 {
 	int brick[14][20];
-	FILE *file = NULL;
+	FILE *file = nullptr;
 
 	switch(level_nr) {
 	case 1: file = std::fopen("data/level01.lev", "rb"); break;
@@ -38,8 +37,8 @@ my_game(imy_game)
 		}
 	}
 
-	Ball *first_ball = new Ball(this, SCREEN_W / 2, 0, 0, 0);
-	pad = new Pad((38 + 495) / 2, SCREEN_H - 24);
+	Ball *first_ball = new Ball(this, SCREEN_W / 2.f, 0, 0, 0);
+	pad = new Pad((38 + 495) / 2.f, SCREEN_H - 24);
 	level.add_particle(first_ball);
 	level.add_particle(pad);
 	pad->attach_ball(first_ball);
@@ -62,7 +61,7 @@ void BreakoutLevel::update(float dt)
 	if (nr_of_balls == 0 && my_game->balls_left > -1) {
 		my_game->balls_left--;
 		if (my_game->balls_left >= 0) {
-			Ball *new_ball = new Ball(this, SCREEN_W / 2, 0, 0, 0);
+			Ball *new_ball = new Ball(this, SCREEN_W / 2.f, 0, 0, 0);
 			level.add_particle(new_ball);
 			pad->attach_ball(new_ball);
 		}
@@ -83,11 +82,8 @@ void BreakoutLevel::add_to_score(int points) {my_game->player_score += points;}
 //=====   BreakoutGame   ====================================================================//
 
 BreakoutGame::BreakoutGame():
-level_finished(false),
-player_score(0), balls_left(3), curr_level(1)
-{
-	level = new BreakoutLevel(this, curr_level);
-}
+	level(new BreakoutLevel(this, curr_level))
+{}
 
 void BreakoutGame::initialize()     {system->add_particle(level);}
 void BreakoutGame::update(float dt)
@@ -143,7 +139,7 @@ brick_type(ibrick_type)
 	x = ix; y = iy;
 	w = (data.BRICK01_BMP)->w;
 	h = (data.BRICK01_BMP)->h;
-	o_type = O_RECT;
+	o_type = ObstacleType::Rect;
 	life = 3;
 	my_level->nr_of_bricks++;
 }
@@ -233,7 +229,7 @@ my_level(imy_level)
 	x = ix; dx = idx;
 	y = iy; dy = idy;
 	w = h = (data.BALL01_BMP)->w;
-	o_type = O_RECT;
+	o_type = ObstacleType::Rect;
 	affected_by_obstacle = true;
 	my_level->nr_of_balls++;
 }
@@ -259,7 +255,7 @@ void Ball::collision(Particle *cp)
 		angle += (x - cp->x) / 64;
 
 		// Max angle with vertical axis is about 70 degrees
-		angle = max(min(angle, 1.2f), -1.2f);
+		angle = clamp(angle, -1.2f, 1.2f);
 
 		dx = velocity * sin(angle);
 		dy = velocity * cos(angle);
@@ -277,7 +273,7 @@ Pad::Pad(float ix, float iy)
 	x = ix; y = iy;
 	w = (data.PAD01_BMP)->w;
 	h = static_cast<float>((data.PAD01_BMP)->h) / 2;
-	o_type = O_RECT;
+	o_type = ObstacleType::Rect;
 }
 
 void Pad::update(float dt)
@@ -297,7 +293,7 @@ void Pad::update(float dt)
 		attached_balls.pop_back();
 
 		float speed = 300; // pixels per second
-		float angle = randf - 0.5;
+		float angle = randf() - 0.5f;
 		attached_ball->dx = speed * sin(angle) + 0.75 * dx;
 		attached_ball->dy = -speed * cos(angle);
 	}
@@ -329,9 +325,9 @@ Block::Block(float ix_min, float iy_min, float ix_max, float iy_max)
 {
 	w = ix_max - ix_min;
 	h = iy_max - iy_min;
-	x = (ix_min + ix_max) / 2;
-	y = (iy_min + iy_max) / 2;
-	o_type = O_RECT;
+	x = (ix_min + ix_max) * 0.5f;
+	y = (iy_min + iy_max) * 0.5f;
+	o_type = ObstacleType::Rect;
 }
 
 void Block::draw()
@@ -351,8 +347,8 @@ Star::Star(float ix, float iy, float idx, float idy)
 	int brightness;
 	float initial_speed = dy;
 
-	dy = (randf * 0.9 + 0.1) * dy;
-	if (initial_speed != 0) brightness = int(255 * (dy / initial_speed));
+	dy = (randf() * 0.9f + 0.1f) * dy;
+	if (initial_speed != 0) brightness = static_cast<int>(std::clamp(255.f * (dy / initial_speed), 0.f, 255.f));
 	else {
 		life = 0;
 		brightness = 0;
@@ -364,16 +360,10 @@ void Star::update(float dt) {if (y > SCREEN_H) life = 0;}
 void Star::draw() {draw_point(x, y, color);}
 
 
-
-StarField::StarField():
-time_passed(0),
-time_per_star(1.0 / 40.0)
-{}
-
 void StarField::initialize()
 {
 	for (int i = 0; i < (SCREEN_H / 25) * int(1.0 / time_per_star); i++) {
-		system->add_particle(new Star(SCREEN_W * randf, SCREEN_H * randf, 0, 75));
+		system->add_particle(new Star(SCREEN_W * randf(), SCREEN_H * randf(), 0, 75));
 	}
 }
 
@@ -381,7 +371,7 @@ void StarField::update(float dt)
 {
 	time_passed += dt;
 	while (time_passed > time_per_star) {
-		system->add_particle(new Star(SCREEN_W * randf, 0, 0, 75));
+		system->add_particle(new Star(SCREEN_W * randf(), 0, 0, 75));
 		time_passed -= time_per_star;
 	}
 }

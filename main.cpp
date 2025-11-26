@@ -51,7 +51,7 @@ void load_data()
     data.TIN_WAV = load_sample("data/TIN.wav");
 }
 
-int main(int argc, char *argv[])
+int main(int /*argc*/, char** /*argv*/)
 {
 	if (!init()) {
 		print_error("Failed to initialize SDL (%s)", SDL_GetError());
@@ -60,7 +60,14 @@ int main(int argc, char *argv[])
 
 	load_data();
 
-	std::srand(static_cast<unsigned int>(std::time(nullptr)));
+	// Basic nullptr asset checks for critical sprites
+	if (!data.BORDER_BMP || !data.PAD01_BMP || !data.BALL01_BMP) {
+		print_error("Critical assets failed to load.");
+		shutdown();
+		return 1;
+	}
+
+	std::srand(std::time(nullptr));
 
 	// Add initial particles to the particle system
 	p.add_particle(new BreakoutGame);
