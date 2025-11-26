@@ -165,7 +165,7 @@ void Brick::draw()
         if (life == 3) {
             draw_sprite(data.BRICK01_BMP, x - w / 2, y - h / 2);
         } else {
-            float alpha = max(0.f, 1.f * life * 4);
+            float alpha = max(0.f, life * 8);
             draw_sprite(data.BRICK01_BMP, x - w / 2, y - h / 2, alpha);
         }
         break;
@@ -203,7 +203,7 @@ void Brick::collision(Particle *cp)
         switch (brick_type) {
         case 1:
             if (life == 3) {
-                life = 0.25;
+                life = 0.125;
                 play_sample(data.POP5_WAV);
             }
             break;
@@ -266,7 +266,7 @@ void Ball::collision(Particle *cp)
 {
     if (cp->type == P_PAD && dy > 0) {
         float velocity = sqrt(dx * dx + dy * dy);
-        float angle = atan(dx / dy);
+        float angle = atan2(dx, dy);
         angle += (x - cp->x) / 64;
 
         // Max angle with vertical axis is about 70 degrees

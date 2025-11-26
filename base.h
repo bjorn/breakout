@@ -16,7 +16,7 @@
  * Helper functions and macros
  */
 using std::abs;
-using std::atan;
+using std::atan2;
 using std::clamp;
 using std::cos;
 using std::max;
