@@ -9,6 +9,8 @@
 #include "data.h"
 #include "ptypes.h"
 
+#include <cstdio>
+
 extern Data data;
 
 
@@ -24,6 +26,7 @@ my_game(imy_game)
 	case 1: file = std::fopen("data/level01.lev", "rb"); break;
 	case 2: file = std::fopen("data/level02.lev", "rb"); break;
 	case 3: file = std::fopen("data/goldrush.lev", "rb"); break;
+	default: break;
 	}
 
 	if (file) {
@@ -147,7 +150,7 @@ brick_type(ibrick_type)
 void Brick::draw()
 {
 	switch (brick_type) {
-	case 0:
+	default:
 		draw_rect(x - w/2, y - h/2, x + w/2, y + h/2, rgb(75,0,0));
 		draw_line(x - w/2, y - h/2, x + w/2, y + h/2, rgb(75,0,0));
 		draw_line(x + w/2, y - h/2, x - w/2, y + h/2, rgb(75,0,0));
@@ -180,6 +183,7 @@ void Brick::update(float dt)
 {
 	switch (brick_type) {
 	case 1: if (life != 3) life -= dt; break;
+	default: break;
 	}
 }
 
@@ -193,8 +197,9 @@ void Brick::collision(Particle *cp)
 				play_sample(data.POP5_WAV);
 			}
 			break;
-		case 2: life -= 2; break;
-		case 3: life -= 2; break;
+		case 2:
+		case 3:
+			life -= 2; break;
 		case 5:
 			if (life == 3) {
 				life = 0;
@@ -210,11 +215,13 @@ void Brick::collision(Particle *cp)
 void Brick::remove()
 {
 	my_level->nr_of_bricks--;
+
 	switch (brick_type) {
 	case 1: my_level->add_to_score(10); break;
 	case 2: my_level->add_to_score(20); break;
 	case 3: my_level->add_to_score(30); break;
 	case 5: my_level->add_to_score(100); break;
+	default: break;
 	}
 }
 

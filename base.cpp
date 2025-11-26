@@ -7,6 +7,7 @@
 #include "base.h"
 
 #include <algorithm>
+#include <climits>
 #include <iostream>
 #include <vector>
 
@@ -144,7 +145,8 @@ void play_sample(Sample *s, float gain, int pan, float frequencyRatio, int loop)
     SDL_SetAudioStreamFrequencyRatio(stream,
                                      std::clamp(frequencyRatio, 0.01f, 100.f));
 
-    if (!SDL_PutAudioStreamData(stream, s->buffer, s->length)) {
+    int putLen = static_cast<int>(clamp<unsigned int>(s->length, 0, INT_MAX));
+    if (!SDL_PutAudioStreamData(stream, s->buffer, putLen)) {
         print_error("Warning: SDL_PutAudioStreamData failed (%s)", SDL_GetError());
     }
 }
@@ -210,7 +212,7 @@ void present()
     const auto lastTicks = gLastTicks;
     gLastTicks = SDL_GetTicks();
     const auto deltaTicks = static_cast<int>(gLastTicks - lastTicks);
-    delta_time = std::clamp(deltaTicks, 0, 1000) / 1000.f;
+    delta_time = clamp(deltaTicks, 0, 1000) / 1000.f;
 }
 
 // ----------------------------------------------------------------------------
@@ -229,7 +231,7 @@ void process_events()
                 case SDLK_F: {
                     // toggle fullscreen
                     bool fullscreen = SDL_GetWindowFlags(gWindow) & SDL_WINDOW_FULLSCREEN;
-                    SDL_SetWindowFullscreen(gWindow, fullscreen ? 0 : SDL_WINDOW_FULLSCREEN);
+                    SDL_SetWindowFullscreen(gWindow, !fullscreen);
                     break;
                 }
                 case SDLK_V: {
@@ -237,7 +239,7 @@ void process_events()
                     int vsync;
                     if (SDL_GetRenderVSync(gRenderer, &vsync)) {
                         SDL_SetRenderVSync(gRenderer, vsync ? 0 : 1);
-                        std::cout << "VSync " << (vsync ? "off" : "on") << std::endl;
+                        std::cout << "VSync " << (vsync ? "off" : "on") << '\n';
                     }
                     break;
                 }
@@ -259,10 +261,10 @@ void process_events()
 void shutdown()
 {
     // Destroy audio streams first.
-    for (int i = 0; i < NUM_AUDIO_STREAMS; ++i) {
-        if (gAudioStreams[i]) {
-            SDL_DestroyAudioStream(gAudioStreams[i]);
-            gAudioStreams[i] = nullptr;
+    for (auto &audioStream : gAudioStreams) {
+        if (audioStream) {
+            SDL_DestroyAudioStream(audioStream);
+            audioStream = nullptr;
         }
     }
 
@@ -292,7 +294,7 @@ Sample *load_sample(const char *filename)
 {
     if (!filename) return nullptr;
 
-    Sample *sample = new Sample;
+    auto *sample = new Sample;
 
     if (!SDL_LoadWAV(filename, &sample->spec, &sample->buffer, &sample->length)) {
         print_error("Failed loading WAV: %s (%s)", filename, SDL_GetError());

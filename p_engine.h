@@ -6,14 +6,14 @@
 
 #pragma once
 
-#include "base.h"
+#include <cstdint>
 #include <cstdlib>
 
 // Random float in [0,1)
 inline float randf() { return static_cast<float>(std::rand() & 1023) / 1024.0f; }
 
 // Gravitation types
-enum class GravityType {
+enum class GravityType : uint8_t {
     None,
     Constant,
     Point,
@@ -21,7 +21,7 @@ enum class GravityType {
 };
 
 // Obstacle types
-enum class ObstacleType {
+enum class ObstacleType : uint8_t {
    None,
    Rect
 };

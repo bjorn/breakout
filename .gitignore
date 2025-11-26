@@ -8,6 +8,10 @@ breakout
 breakout.exe
 build.ninja
 cmake_install.cmake
+compile_commands.json
 
 # Files to ignore for out-of-source CMake build
 build/
+
+# clangd cache
+.cache/

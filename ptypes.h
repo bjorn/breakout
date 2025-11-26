@@ -12,7 +12,7 @@
 #include <vector>
 
 // Defined particle types
-enum class ParticleType {
+enum class ParticleType : uint8_t {
 	Ball  = 1,
 	Brick = 2,
 	Pad   = 3

@@ -9,8 +9,6 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
-#include <cstdio>
-#include <cstring>
 
 #include <SDL3/SDL.h>
 
@@ -20,8 +18,10 @@
 using std::abs;
 using std::atan;
 using std::clamp;
+using std::cos;
 using std::max;
 using std::min;
+using std::sin;
 using std::sqrt;
 #ifndef SGN
 #define SGN(a)   (((a) < 0) ? -1 : ((a) > 0))

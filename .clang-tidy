@@ -1,0 +1,11 @@
+---
+Checks: >
+  modernize-*,
+  bugprone-*,
+  performance-*,
+  -modernize-avoid-c-arrays,
+  -modernize-use-trailing-return-type,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-narrowing-conversions,
+  -readability-implicit-bool-conversion,
+HeaderFilterRegex: '.*'

@@ -189,7 +189,7 @@ void Particle_System::set_obstacle(Particle *p)
 	}
 	else if (!p->obstacle && p->o_type != ObstacleType::None) {
 		// Add obstacle to list
-		Modifier *new_o = new Modifier(p);
+		auto *new_o = new Modifier(p);
 		if (first_obstacle) {
 			first_obstacle->prev = new_o;
 			new_o->next = first_obstacle;
@@ -214,7 +214,7 @@ void Particle_System::set_grav_source(Particle *p)
 	}
 	else if (!p->grav_source && p->g_type != GravityType::None) {
 		// Add gravity source to list
-		Modifier *new_g = new Modifier(p);
+		auto *new_g = new Modifier(p);
 		if (first_grav_source) {
 			first_grav_source->prev = new_g;
 			new_g->next = first_grav_source;
