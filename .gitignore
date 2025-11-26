@@ -1,0 +1,13 @@
+# Files to ignore for in-source CMake build
+.ninja_deps
+.ninja_log
+CMakeCache.txt
+CMakeFiles/
+Makefile
+breakout
+breakout.exe
+build.ninja
+cmake_install.cmake
+
+# Files to ignore for out-of-source CMake build
+build/
