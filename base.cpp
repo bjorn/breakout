@@ -245,7 +245,11 @@ bool handle_event(const SDL_Event &e)
             }
             break;
         }
-        default: break;
+        case SDLK_1: SDL_SetWindowSize(gWindow, SCREEN_W, SCREEN_H); break;
+        case SDLK_2: SDL_SetWindowSize(gWindow, SCREEN_W * 2, SCREEN_H * 2); break;
+        case SDLK_3: SDL_SetWindowSize(gWindow, SCREEN_W * 3, SCREEN_H * 3); break;
+        case SDLK_4: SDL_SetWindowSize(gWindow, SCREEN_W * 4, SCREEN_H * 4); break;
+        default:     break;
         }
     }
 
