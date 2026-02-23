@@ -20,6 +20,11 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
     # Emit an HTML launcher for convenience
     set(CMAKE_EXECUTABLE_SUFFIX ".html")
 
+    target_compile_options(breakout PRIVATE
+        # Use SDL3 from Emscripten port (provides SDL3 include paths)
+        "-sUSE_SDL=3"
+    )
+
     target_link_options(breakout PRIVATE
         # Use SDL3 from Emscripten port
         "-sUSE_SDL=3"
