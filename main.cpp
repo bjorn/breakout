@@ -13,6 +13,10 @@
 
 #include <SDL3/SDL_main.h>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten/emscripten.h>
+#endif
+
 #include "base.h"
 #include "data.h"
 #include "p_engine.h"
@@ -88,6 +92,15 @@ SDL_AppResult SDL_AppEvent(void * /*appstate*/, SDL_Event *event)
 
 SDL_AppResult SDL_AppIterate(void * /*appstate*/)
 {
+#ifdef __EMSCRIPTEN__
+    static bool forcedRafTiming = false;
+    if (!forcedRafTiming) {
+        // SDL callback setup may override timing after init; force RAF once here.
+        emscripten_set_main_loop_timing(EM_TIMING_RAF, 1);
+        forcedRafTiming = true;
+    }
+#endif
+
     update_input_state();
     p.update_particles(delta_time);
     p.draw_particles();
