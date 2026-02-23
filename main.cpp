@@ -106,9 +106,11 @@ SDL_AppResult SDL_AppIterate(void * /*appstate*/)
     p.draw_particles();
     present();
 
+#ifndef __EMSCRIPTEN__
     if (key[KEY_ESC]) {
         return SDL_APP_SUCCESS;
     }
+#endif
 
     return SDL_APP_CONTINUE;
 }
