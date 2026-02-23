@@ -167,7 +167,11 @@ bool init()
         return false;
     }
 
+    // In WebAssembly builds, VSync causes stutter on my system due to running
+    // at 60 fps on a 75 fps screen.
+#ifndef __EMSCRIPTEN__
     SDL_SetRenderVSync(gRenderer, 1);
+#endif
     SDL_SetRenderDrawBlendMode(gRenderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderLogicalPresentation(gRenderer, SCREEN_W, SCREEN_H, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 
@@ -176,6 +180,7 @@ bool init()
     std::fill(std::begin(key), std::end(key), 0);
 
     gKeyStates = SDL_GetKeyboardState(nullptr);
+    gLastTicks = SDL_GetTicks();
 
     // Create multiple audio streams for polyphonic playback (formats are set later)
     for (int i = 0; i < NUM_AUDIO_STREAMS; ++i) {
@@ -217,37 +222,39 @@ void present()
 // ----------------------------------------------------------------------------
 // Event processing / input mapping
 // ----------------------------------------------------------------------------
-void process_events()
+bool handle_event(const SDL_Event &e)
 {
-    SDL_Event e;
-    bool quit = false;
+    if (e.type == SDL_EVENT_QUIT) {
+        return true;
+    }
 
-    while (SDL_PollEvent(&e)) {
-        if (e.type == SDL_EVENT_QUIT) {
-            quit = true;
-        } else if (e.type == SDL_EVENT_KEY_DOWN) {
-            switch (e.key.key) {
-            case SDLK_F: {
-                // toggle fullscreen
-                bool fullscreen = SDL_GetWindowFlags(gWindow) & SDL_WINDOW_FULLSCREEN;
-                SDL_SetWindowFullscreen(gWindow, !fullscreen);
-                break;
+    if (e.type == SDL_EVENT_KEY_DOWN) {
+        switch (e.key.key) {
+        case SDLK_F: {
+            // toggle fullscreen
+            bool fullscreen = SDL_GetWindowFlags(gWindow) & SDL_WINDOW_FULLSCREEN;
+            SDL_SetWindowFullscreen(gWindow, !fullscreen);
+            break;
+        }
+        case SDLK_V: {
+            // toggle vsync
+            int vsync;
+            if (SDL_GetRenderVSync(gRenderer, &vsync)) {
+                SDL_SetRenderVSync(gRenderer, vsync ? 0 : 1);
+                std::cout << "VSync " << (vsync ? "off" : "on") << '\n';
             }
-            case SDLK_V: {
-                // toggle vsync
-                int vsync;
-                if (SDL_GetRenderVSync(gRenderer, &vsync)) {
-                    SDL_SetRenderVSync(gRenderer, vsync ? 0 : 1);
-                    std::cout << "VSync " << (vsync ? "off" : "on") << '\n';
-                }
-                break;
-            }
-            default: break;
-            }
+            break;
+        }
+        default: break;
         }
     }
 
-    key[KEY_ESC] = gKeyStates[SDL_SCANCODE_ESCAPE] || quit;
+    return false;
+}
+
+void update_input_state()
+{
+    key[KEY_ESC] = gKeyStates[SDL_SCANCODE_ESCAPE];
     key[KEY_LEFT] = gKeyStates[SDL_SCANCODE_LEFT];
     key[KEY_RIGHT] = gKeyStates[SDL_SCANCODE_RIGHT];
     key[KEY_SPACE] = gKeyStates[SDL_SCANCODE_SPACE];

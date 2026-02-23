@@ -13,9 +13,26 @@ add_executable(breakout
     base.cpp
 )
 
-find_package(SDL3 REQUIRED CONFIG REQUIRED)
+# WebAssembly (Emscripten) vs native SDL3
+if (CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+    message(STATUS "Configuring for WebAssembly (Emscripten)")
 
-target_link_libraries(breakout PRIVATE SDL3::SDL3)
+    # Emit an HTML launcher for convenience
+    set(CMAKE_EXECUTABLE_SUFFIX ".html")
+
+    target_link_options(breakout PRIVATE
+        # Use SDL3 from Emscripten port
+        "-sUSE_SDL=3"
+        "-sALLOW_MEMORY_GROWTH=1"
+        "$<$<CONFIG:Debug>:-sASSERTIONS=1>"
+        # Embed the data directory into the binary (no external .data file)
+        "--embed-file" "${CMAKE_SOURCE_DIR}/data@/data"
+    )
+else()
+    find_package(SDL3 CONFIG REQUIRED)
+    target_link_libraries(breakout PRIVATE SDL3::SDL3)
+endif()
+
 target_compile_options(breakout PRIVATE
     $<$<CXX_COMPILER_ID:GNU,Clang>:-Wall -Wpedantic>
 )

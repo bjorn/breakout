@@ -86,7 +86,8 @@ void play_sample(Sample *s, float gain = 1.f, int pan = 128, float frequencyRati
 /* Main loop */
 [[nodiscard]] bool init();
 void present();
-void process_events();
+[[nodiscard]] bool handle_event(const SDL_Event &event);
+void update_input_state();
 void shutdown();
 
 /* Resources */

@@ -6,8 +6,12 @@
  *   1.0: Initial version.
  */
 
+#define SDL_MAIN_USE_CALLBACKS
+
 #include <cstdlib>
 #include <ctime>
+
+#include <SDL3/SDL_main.h>
 
 #include "base.h"
 #include "data.h"
@@ -50,11 +54,11 @@ void load_data()
     data.TIN_WAV = load_sample("data/TIN.wav");
 }
 
-int main(int /*argc*/, char ** /*argv*/)
+SDL_AppResult SDL_AppInit(void ** /*appstate*/, int /*argc*/, char ** /*argv*/)
 {
     if (!init()) {
         print_error("Failed to initialize SDL (%s)", SDL_GetError());
-        return 1;
+        return SDL_APP_FAILURE;
     }
 
     load_data();
@@ -62,8 +66,7 @@ int main(int /*argc*/, char ** /*argv*/)
     // Basic nullptr asset checks for critical sprites
     if (!data.BORDER_BMP || !data.PAD01_BMP || !data.BALL01_BMP) {
         print_error("Critical assets failed to load.");
-        shutdown();
-        return 1;
+        return SDL_APP_FAILURE;
     }
 
     std::srand(std::time(nullptr));
@@ -72,16 +75,33 @@ int main(int /*argc*/, char ** /*argv*/)
     p.add_particle(new BreakoutGame);
     p.add_particle(new StarField);
 
-    // Main loop
-    do {
-        process_events();
-        p.update_particles(delta_time);
-        p.draw_particles();
-        present();
-    } while (!key[KEY_ESC]); // while (running)
+    return SDL_APP_CONTINUE;
+}
 
+SDL_AppResult SDL_AppEvent(void * /*appstate*/, SDL_Event *event)
+{
+    if (handle_event(*event)) {
+        return SDL_APP_SUCCESS;
+    }
+    return SDL_APP_CONTINUE;
+}
+
+SDL_AppResult SDL_AppIterate(void * /*appstate*/)
+{
+    update_input_state();
+    p.update_particles(delta_time);
+    p.draw_particles();
+    present();
+
+    if (key[KEY_ESC]) {
+        return SDL_APP_SUCCESS;
+    }
+
+    return SDL_APP_CONTINUE;
+}
+
+void SDL_AppQuit(void * /*appstate*/, SDL_AppResult /*result*/)
+{
     p.remove_particles();
-
     shutdown();
-    return 0;
 }
