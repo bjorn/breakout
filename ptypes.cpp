@@ -252,8 +252,10 @@ Ball::Ball(BreakoutLevel *imy_level, float ix, float iy, float idx, float idy)
 
 void Ball::update(float dt)
 {
+    (void)dt;
     if (x - w / 2 > SCREEN_W || x + w / 2 < 0 || y - h / 2 > SCREEN_H || y + h / 2 < 0) {
         life = 0;
+        rumble_gamepad(0x4000, 0x8000, 120);
     }
 }
 
@@ -264,6 +266,8 @@ void Ball::draw()
 
 void Ball::collision(Particle *cp)
 {
+    rumble_gamepad(0x1400, 0x2400, 30);
+
     if (cp->type == P_PAD && dy > 0) {
         float velocity = sqrt(dx * dx + dy * dy);
         float angle = atan2(dx, dy);
@@ -298,20 +302,32 @@ void Pad::update(float dt)
 {
     float temp = abs(dx);
     dx = (temp - min(temp, 200 * dt)) * SGN(dx);
-    if (key[KEY_LEFT])
-        dx = max<float>(dx - 1200 * dt, -300);
-    if (key[KEY_RIGHT])
-        dx = min<float>(dx + 1200 * dt, 300);
+
+    float move_input = 0.f;
+    if (key[KEY_LEFT]) {
+        move_input -= 1.f;
+    }
+    if (key[KEY_RIGHT]) {
+        move_input += 1.f;
+    }
+
+    float stick_x = get_gamepad_left_x();
+    if (abs(stick_x) > abs(move_input)) {
+        move_input = stick_x;
+    }
+
+    dx = clamp(dx + move_input * (1200.f * dt), -300.f, 300.f);
 
     temp = x;
     x = max(min(x, 493 - w / 2), 39 + w / 2);
     if (x != temp)
         dx = 0;
 
-    // On KEY_SPACE, release an attached ball
-    if (key[KEY_SPACE] && !attached_balls.empty()) {
+    // On KEY_ACTION, release an attached ball
+    if ((key[KEY_ACTION]) && !attached_balls.empty()) {
         Particle *attached_ball = attached_balls.back();
         attached_balls.pop_back();
+        rumble_gamepad(0x1400, 0x2400, 30);
 
         float speed = 300; // pixels per second
         float angle = randf() - 0.5f;

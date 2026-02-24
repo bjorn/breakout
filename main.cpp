@@ -107,7 +107,7 @@ SDL_AppResult SDL_AppIterate(void * /*appstate*/)
     present();
 
 #ifndef __EMSCRIPTEN__
-    if (key[KEY_ESC]) {
+    if (key[KEY_QUIT]) {
         return SDL_APP_SUCCESS;
     }
 #endif

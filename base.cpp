@@ -32,9 +32,33 @@ static SDL_AudioStream *gAudioStreams[NUM_AUDIO_STREAMS] = { nullptr, nullptr, n
 static int gNextAudioStreamIndex = 0;
 static uint64_t gLastTicks = 0;
 static const bool *gKeyStates = nullptr;
+static SDL_Gamepad *gGamepad = nullptr;
 
-//=====   Frames per second counter   =======================================================//
+// ----------------------------------------------------------------------------
+// Gamepad helpers
+// ----------------------------------------------------------------------------
+static void open_first_available_gamepad()
+{
+    if (gGamepad) {
+        return;
+    }
 
+    int count = 0;
+    SDL_JoystickID *gamepads = SDL_GetGamepads(&count);
+    if (!gamepads) {
+        return;
+    }
+
+    for (int i = 0; i < count && !gGamepad; ++i) {
+        gGamepad = SDL_OpenGamepad(gamepads[i]);
+    }
+
+    SDL_free(gamepads);
+}
+
+// ----------------------------------------------------------------------------
+// Frames per second counter
+// ----------------------------------------------------------------------------
 volatile unsigned int fps, fps_counter;
 Uint32 reset_fps_counter(void *userdata, SDL_TimerID timerID, Uint32 interval)
 {
@@ -155,7 +179,7 @@ void play_sample(Sample *s, float gain, int pan, float frequencyRatio, int loop)
 // ----------------------------------------------------------------------------
 bool init()
 {
-    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
+    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMEPAD)) {
         print_error("Warning: Failed to initialize SDL (%s)", SDL_GetError());
         return false;
     }
@@ -224,11 +248,24 @@ void present()
 // ----------------------------------------------------------------------------
 bool handle_event(const SDL_Event &e)
 {
-    if (e.type == SDL_EVENT_QUIT) {
-        return true;
-    }
+    switch (e.type) {
+    case SDL_EVENT_QUIT: return true;
 
-    if (e.type == SDL_EVENT_KEY_DOWN) {
+    case SDL_EVENT_GAMEPAD_ADDED:
+        if (!gGamepad) {
+            gGamepad = SDL_OpenGamepad(e.gdevice.which);
+        }
+        return false;
+
+    case SDL_EVENT_GAMEPAD_REMOVED:
+        if (gGamepad && SDL_GetGamepadID(gGamepad) == e.gdevice.which) {
+            SDL_CloseGamepad(gGamepad);
+            gGamepad = nullptr;
+            open_first_available_gamepad();
+        }
+        return false;
+
+    case SDL_EVENT_KEY_DOWN:
         switch (e.key.key) {
         case SDLK_F: {
             // toggle fullscreen
@@ -251,17 +288,46 @@ bool handle_event(const SDL_Event &e)
         case SDLK_4: SDL_SetWindowSize(gWindow, SCREEN_W * 4, SCREEN_H * 4); break;
         default:     break;
         }
-    }
+        return false;
 
-    return false;
+    default: return false;
+    }
 }
 
 void update_input_state()
 {
-    key[KEY_ESC] = gKeyStates[SDL_SCANCODE_ESCAPE];
+    key[KEY_QUIT] = gKeyStates[SDL_SCANCODE_ESCAPE];
     key[KEY_LEFT] = gKeyStates[SDL_SCANCODE_LEFT];
     key[KEY_RIGHT] = gKeyStates[SDL_SCANCODE_RIGHT];
-    key[KEY_SPACE] = gKeyStates[SDL_SCANCODE_SPACE];
+    key[KEY_ACTION] = gKeyStates[SDL_SCANCODE_SPACE];
+
+    if (gGamepad) {
+        key[KEY_ACTION] |= SDL_GetGamepadButton(gGamepad, SDL_GAMEPAD_BUTTON_SOUTH);
+        key[KEY_LEFT] |= SDL_GetGamepadButton(gGamepad, SDL_GAMEPAD_BUTTON_DPAD_LEFT);
+        key[KEY_RIGHT] |= SDL_GetGamepadButton(gGamepad, SDL_GAMEPAD_BUTTON_DPAD_RIGHT);
+    }
+}
+
+float get_gamepad_left_x()
+{
+    if (!gGamepad) {
+        return 0.f;
+    }
+
+    const Sint16 axisValue = SDL_GetGamepadAxis(gGamepad, SDL_GAMEPAD_AXIS_LEFTX);
+    const float axisF = clamp(static_cast<float>(axisValue) / 32767.0f, -1.0f, 1.0f);
+
+    constexpr float deadzone = 0.1f;
+    return (abs(axisF) <= deadzone) ? 0.f : axisF;
+}
+
+void rumble_gamepad(Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
+{
+    if (!gGamepad) {
+        return;
+    }
+
+    SDL_RumbleGamepad(gGamepad, low_frequency_rumble, high_frequency_rumble, duration_ms);
 }
 
 // ----------------------------------------------------------------------------
@@ -281,6 +347,11 @@ void shutdown()
     if (gAudioDevice) {
         SDL_CloseAudioDevice(gAudioDevice);
         gAudioDevice = 0;
+    }
+
+    if (gGamepad) {
+        SDL_CloseGamepad(gGamepad);
+        gGamepad = nullptr;
     }
 
     if (gRenderer) {

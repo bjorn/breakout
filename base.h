@@ -30,10 +30,10 @@ using std::sqrt;
 /* ----------------------------------------------------------------------------
  * Key codes (mapped internally to SDL scancodes)
  */
-inline constexpr int KEY_ESC = 1;
+inline constexpr int KEY_QUIT = 1;
 inline constexpr int KEY_LEFT = 2;
 inline constexpr int KEY_RIGHT = 3;
-inline constexpr int KEY_SPACE = 4;
+inline constexpr int KEY_ACTION = 4;
 
 extern volatile unsigned char key[256];
 extern volatile float delta_time;
@@ -88,6 +88,8 @@ void play_sample(Sample *s, float gain = 1.f, int pan = 128, float frequencyRati
 void present();
 [[nodiscard]] bool handle_event(const SDL_Event &event);
 void update_input_state();
+[[nodiscard]] float get_gamepad_left_x();
+void rumble_gamepad(Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms);
 void shutdown();
 
 /* Resources */
